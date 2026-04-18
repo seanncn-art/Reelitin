@@ -180,7 +180,34 @@ body.stage-fury  #bg{background:linear-gradient(180deg,#0a0515 0%,#120820 25%,#1
 .play-btn:active{transform:scale(.96);}
 .play-normal{background:linear-gradient(135deg,var(--gold),var(--orange));color:#03101f;box-shadow:0 5px 18px rgba(255,150,0,.4);}
 .play-daily{background:linear-gradient(135deg,var(--green),#00b4d8);color:#03101f;box-shadow:0 5px 18px rgba(61,255,176,.3);}
-/* BOSS FIGHT */
+/* SAILING CUTSCENE */
+#sail-overlay{position:fixed;inset:0;z-index:550;display:none;align-items:center;justify-content:center;background:#020d1a;}
+#sail-overlay.show{display:flex;}
+#sail-scene{position:relative;width:100%;height:100%;overflow:hidden;}
+#sail-sky{position:absolute;inset:0;background:linear-gradient(180deg,#0a1628 0%,#1a3a6b 40%,#2d6a9f 70%,#4a9ebe 100%);}
+#sail-sun{position:absolute;top:12%;right:18%;font-size:clamp(2.5rem,6vw,4rem);animation:sunBob 3s ease-in-out infinite;filter:drop-shadow(0 0 20px rgba(255,220,50,.6));}
+@keyframes sunBob{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
+.sail-cloud{position:absolute;top:18%;font-size:clamp(1.8rem,4vw,2.8rem);animation:cloudDrift 12s linear infinite;opacity:.8;}
+@keyframes cloudDrift{from{transform:translateX(0)}to{transform:translateX(-120vw)}}
+#sail-water-wrap{position:absolute;bottom:0;left:0;width:100%;height:40%;}
+#sail-water{width:100%;height:100%;background:linear-gradient(180deg,#1a5a8a 0%,#0d3a5a 100%);animation:waterShimmer 2s ease-in-out infinite alternate;}
+@keyframes waterShimmer{from{filter:brightness(1)}to{filter:brightness(1.15)}}
+/* Wave lines on water */
+#sail-water::before{content:'〰️〰️〰️〰️〰️〰️〰️〰️';position:absolute;top:12%;left:0;width:200%;font-size:1.4rem;opacity:.25;animation:waveDrift 4s linear infinite;}
+#sail-water::after{content:'〰️〰️〰️〰️〰️〰️〰️〰️';position:absolute;top:35%;left:-50%;width:200%;font-size:1rem;opacity:.18;animation:waveDrift 6s linear infinite reverse;}
+@keyframes waveDrift{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+#sail-boat{position:absolute;bottom:36%;font-size:clamp(4rem,10vw,7rem);animation:boatSail 3s ease-in-out infinite, boatEntry 1.2s cubic-bezier(.34,1.56,.64,1) forwards;filter:drop-shadow(0 8px 16px rgba(0,0,0,.5));left:-20%;}
+@keyframes boatEntry{from{left:-20%}to{left:50%;transform:translateX(-50%)}}
+@keyframes boatSail{0%,100%{transform:translateX(-50%) rotate(-2deg) translateY(0)}50%{transform:translateX(-50%) rotate(2deg) translateY(-8px)}}
+/* Stage info card */
+#sail-info{position:absolute;bottom:8%;left:50%;transform:translateX(-50%);text-align:center;animation:infoFadeIn .6s .9s both;}
+@keyframes infoFadeIn{from{opacity:0;transform:translateX(-50%) translateY(20px)}to{opacity:1;transform:translateX(-50%) translateY(0)}}
+#sail-stage-num{font-size:.75rem;text-transform:uppercase;letter-spacing:4px;color:#4db8f0;opacity:.7;margin-bottom:4px;}
+#sail-stage-name{font-family:'Fredoka One',cursive;font-size:clamp(1.6rem,4vw,2.6rem);color:#ffd93d;text-shadow:0 0 25px rgba(255,217,61,.5);margin-bottom:6px;}
+#sail-stage-desc{font-size:.85rem;color:#d8f0ff;opacity:.75;margin-bottom:18px;}
+#sail-start-btn{font-family:'Fredoka One',cursive;font-size:1.2rem;padding:14px 42px;border-radius:50px;border:none;cursor:pointer;background:linear-gradient(135deg,#ffd93d,#ff9500);color:#03101f;box-shadow:0 6px 24px rgba(255,150,0,.4);animation:btnPulse 1.2s 1.5s ease-in-out infinite alternate;}
+#sail-start-btn:active{transform:scale(.96);}
+@keyframes btnPulse{from{box-shadow:0 6px 24px rgba(255,150,0,.4);transform:scale(1)}to{box-shadow:0 10px 32px rgba(255,150,0,.7);transform:scale(1.04)}}
 #boss-hp-bar-wrap{position:fixed;top:76px;left:50%;transform:translateX(-50%);z-index:200;width:min(340px,85vw);display:none;flex-direction:column;align-items:center;gap:4px;}
 #boss-hp-bar-wrap.show{display:flex;}
 #boss-hp-label{font-family:'Fredoka One',cursive;font-size:.85rem;color:#ff4757;text-shadow:0 0 10px rgba(255,71,87,.6);letter-spacing:1px;}
@@ -297,6 +324,29 @@ body.stage-fury  #bg{background:linear-gradient(180deg,#0a0515 0%,#120820 25%,#1
 
 <div id="timer-wrap"><div id="timer-bar"></div></div>
 <div id="game-area"></div>
+
+<!-- SAILING CUTSCENE -->
+<div id="sail-overlay">
+  <div id="sail-scene">
+    <div id="sail-sky"></div>
+    <div id="sail-sun">☀️</div>
+    <div id="sail-clouds">
+      <span class="sail-cloud" style="left:10%;animation-delay:0s">☁️</span>
+      <span class="sail-cloud" style="left:55%;animation-delay:1.5s">☁️</span>
+      <span class="sail-cloud" style="left:80%;animation-delay:.7s">☁️</span>
+    </div>
+    <div id="sail-water-wrap">
+      <div id="sail-water"></div>
+    </div>
+    <div id="sail-boat">⛵</div>
+    <div id="sail-info">
+      <div id="sail-stage-num"></div>
+      <div id="sail-stage-name"></div>
+      <div id="sail-stage-desc"></div>
+      <button id="sail-start-btn" onclick="beginSailedStage()">🎣 START FISHING</button>
+    </div>
+  </div>
+</div>
 
 <div id="stage-banner"><div class="sb-inner">
   <div class="sb-num" id="sb-num">Stage 1</div>
@@ -464,12 +514,12 @@ const SPECIES=[
   {id:'rainbowsnapper',emoji:'🐠',name:'Bin Tang Snapper',pts:5000,size:2.2,rare:true,rainbow:true},
 ];
 const STAGES=[
-  {num:1,name:'SHALLOW REEF',  desc:'Calm waters — warm up your cast!',          fish:16,speed:1.0,time:35,target:300, spawnMs:800, goldP:.05,bombP:.00,freezeP:.00,rareP:.02},
-  {num:2,name:'OPEN OCEAN',    desc:'Fish are moving — keep up!',                fish:20,speed:1.4,time:32,target:700, spawnMs:700, goldP:.08,bombP:.08,freezeP:.05,rareP:.04},
-  {num:3,name:'MARLIN ALLEY',  desc:'Mahi-Mahi season — bombs incoming!',        fish:24,speed:1.8,time:30,target:1300,spawnMs:600, goldP:.10,bombP:.12,freezeP:.07,rareP:.06},
-  {num:4,name:'STORM SURGE',   desc:'Chaos on the water — chain or die!',        fish:28,speed:2.3,time:28,target:2200,spawnMs:500, goldP:.12,bombP:.15,freezeP:.09,rareP:.07},
-  {num:5,name:'MIDNIGHT ABYSS',desc:'Deep water danger — high risk, high reward',fish:32,speed:3.0,time:25,target:3500,spawnMs:400, goldP:.15,bombP:.18,freezeP:.10,rareP:.10},
-  {num:6,name:'HAWAIIAN FURY', desc:'🌺 Ultimate waters — become a legend!',    fish:24,speed:3.2,time:22,target:5000,spawnMs:350,goldP:.20,bombP:.18,freezeP:.10,rareP:.12},
+  {num:1,name:'SHALLOW REEF',  desc:'Calm waters — warm up your cast!',          fish:12,speed:1.0,time:35,target:300, spawnMs:900, goldP:.05,bombP:.00,freezeP:.00,rareP:.02},
+  {num:2,name:'OPEN OCEAN',    desc:'Fish are moving — keep up!',                fish:15,speed:1.4,time:32,target:700, spawnMs:750, goldP:.08,bombP:.08,freezeP:.05,rareP:.04},
+  {num:3,name:'MARLIN ALLEY',  desc:'Mahi-Mahi season — bombs incoming!',        fish:18,speed:1.8,time:30,target:1300,spawnMs:650, goldP:.10,bombP:.12,freezeP:.07,rareP:.06},
+  {num:4,name:'STORM SURGE',   desc:'Chaos on the water — chain or die!',        fish:20,speed:2.3,time:28,target:2200,spawnMs:550, goldP:.12,bombP:.15,freezeP:.09,rareP:.07},
+  {num:5,name:'MIDNIGHT ABYSS',desc:'Deep water danger — high risk, high reward',fish:22,speed:3.0,time:25,target:3500,spawnMs:450, goldP:.15,bombP:.18,freezeP:.10,rareP:.10},
+  {num:6,name:'HAWAIIAN FURY', desc:'🌺 Ultimate waters — become a legend!',    fish:22,speed:3.2,time:22,target:5000,spawnMs:400,goldP:.20,bombP:.18,freezeP:.10,rareP:.12},
   {num:7,name:'KRAKEN BOSS',   desc:'💀 A giant octopus rises — TAP IT TO DEATH!',fish:0,speed:0,time:60,target:0,spawnMs:99999,goldP:0,bombP:0,freezeP:0,rareP:0,isBoss:true},
 ];
 const UPGRADES_DEF=[
@@ -624,8 +674,20 @@ document.addEventListener('touchmove',e=>{ const t=e.touches[0]; mouseX=t.client
   animWave();
 })();
 
-// ── Fish bubble trail ──
-function spawnFishBubble(x,y){
+// ── Fish bubble trail — single shared ticker, not one interval per fish ──
+setInterval(()=>{
+  if(!gameActive||window.innerWidth<600) return;
+  const fish=gameArea.querySelectorAll('.fish:not(.caught-anim)');
+  if(!fish.length) return;
+  // Pick 2 random fish max to bubble
+  const picks=Math.min(2,fish.length);
+  for(let i=0;i<picks;i++){
+    const f=fish[Math.floor(Math.random()*fish.length)];
+    if(!f||!f.parentNode) continue;
+    const r=f.getBoundingClientRect();
+    if(r.width>0) spawnFishBubble(r.left+r.width/2, r.top+r.height/2);
+  }
+},800);
   if(Math.random()>.35) return;
   const b=document.createElement('div'); b.className='fish-bubble';
   const s=2+Math.random()*4;
@@ -692,7 +754,8 @@ function quitToHome(){
   $('boss-hp-bar-wrap').classList.remove('show');
   $('timer-wrap').style.display='block';
   clearFish();
-  document.getElementById('pause-overlay').classList.remove('open');
+  $('sail-overlay').classList.remove('show');
+  $('pause-overlay').classList.remove('open');
   document.getElementById('pause-btn').textContent='⏸';
   document.getElementById('home-screen').style.display='block';
   document.getElementById('howtoplay-screen').style.display='none';
@@ -713,7 +776,7 @@ function startBossDirectly(){
   stage=STAGES.length-1; // boss stage
   updateHUD(); clearFish();
   updateStageAtmosphere(stage);
-  showStageBanner(stage,()=>{ beginStage(stage); startBossFight(); });
+  showSailingScene(stage,()=>{ beginStage(stage); startBossFight(); });
 }
 function startDailyChallenge(){ isDailyMode=true; rng=seededRand(hashStr(getDailyKey())); $('daily-badge').classList.add('show'); closeDaily(); _init(); }
 function _init(){
@@ -723,12 +786,28 @@ function _init(){
   document.getElementById('pause-btn').textContent='⏸';
   gameActive=true;
   updateHUD(); clearFish(); SFX.stage();
-  showStageBanner(0,()=>beginStage(0));
+  showSailingScene(0,()=>beginStage(0));
 }
-function showStageBanner(idx,cb){
-  const s=STAGES[idx]; $('sb-num').textContent=`Stage ${s.num}`; $('sb-name').textContent=s.name; $('sb-desc').textContent=s.desc;
+let _sailCallback=null;
+
+function showSailingScene(idx, cb){
+  const s=STAGES[idx];
+  _sailCallback=cb;
+  $('sail-stage-num').textContent=`Stage ${s.num}`;
+  $('sail-stage-name').textContent=s.name;
+  $('sail-stage-desc').textContent=s.desc;
+  // Reset boat animation
+  const boat=$('sail-boat');
+  boat.style.animation='none';
+  boat.offsetHeight; // reflow
+  boat.style.animation='boatEntry 1.2s cubic-bezier(.34,1.56,.64,1) forwards, boatSail 3s ease-in-out 1.2s infinite';
+  $('sail-overlay').classList.add('show');
   updateStageAtmosphere(idx);
-  sbBanner.classList.add('show'); setTimeout(()=>{ sbBanner.classList.remove('show'); setTimeout(cb||(() =>{}),300); },2300);
+}
+
+function beginSailedStage(){
+  $('sail-overlay').classList.remove('show');
+  if(_sailCallback){ _sailCallback(); _sailCallback=null; }
 }
 function beginStage(idx,resumeTime){
   stage=idx; const s=STAGES[idx]; timeLeft=resumeTime!==undefined?resumeTime:s.time;
@@ -748,22 +827,17 @@ function _intervals(){
   spawnInt=setInterval(()=>{
     if(!gameActive||frozen) return;
     const cur=gameArea.querySelectorAll('.fish').length;
-    if(cur<s.fish+16) spawnFish();
-    // If screen nearly empty, burst-fill immediately
-    if(cur<4){
-      const needed=Math.min(s.fish, 8);
-      for(let i=0;i<needed;i++) setTimeout(()=>spawnFish(), i*60);
-    }
+    if(cur<s.fish+8) spawnFish();
   },s.spawnMs);
-  // Fast refill checker — catches gaps between slow spawn intervals
+  // Refill checker — slower interval to reduce querySelectorAll overhead
   const refillInt=setInterval(()=>{
     if(!gameActive||frozen) return;
     const cur=gameArea.querySelectorAll('.fish').length;
     if(cur<3){
-      const needed=Math.min(s.fish, 6);
-      for(let i=0;i<needed;i++) setTimeout(()=>spawnFish(), i*80);
+      const needed=Math.min(4, s.fish);
+      for(let i=0;i<needed;i++) setTimeout(()=>spawnFish(), i*120);
     }
-  },200);
+  },500);
   // Store refillInt so it clears with the rest
   if(window._refillInt) clearInterval(window._refillInt);
   window._refillInt=refillInt;
@@ -779,10 +853,9 @@ function endStage(){
     clearFish(); stage++;
     SFX.stage();
     if(STAGES[stage].isBoss){
-      // Boss intro banner then fight
-      showStageBanner(stage,()=>{ beginStage(stage); startBossFight(); });
+      showSailingScene(stage,()=>{ beginStage(stage); startBossFight(); });
     } else {
-      showStageBanner(stage,()=>beginStage(stage));
+      showSailingScene(stage,()=>beginStage(stage));
     }
   } else { gameOver(); }
 }
@@ -1074,19 +1147,9 @@ function spawnFish(){
     else if(top>45) fish.classList.add('mid-depth');
   }
 
-  // Bubble trail — desktop only (too many intervals kills iPhone at stage 5)
-  if(!isMobile){
-    const bubbleInt=setInterval(()=>{
-      if(!fish.parentNode){ clearInterval(bubbleInt); return; }
-      const r=fish.getBoundingClientRect();
-      if(r.width>0) spawnFishBubble(r.left+r.width/2, r.top+r.height/2);
-    }, 600+Math.random()*400);
-    fish._bubbleClear=()=>clearInterval(bubbleInt);
-    setTimeout(()=>{ clearInterval(bubbleInt); if(fish.parentNode&&!fish.dataset.caught) fish.remove(); },lifeMs);
-  } else {
-    fish._bubbleClear=()=>{};
-    setTimeout(()=>{ if(fish.parentNode&&!fish.dataset.caught) fish.remove(); },lifeMs);
-  }
+  // No per-fish intervals — bubbles handled by shared global ticker
+  fish._bubbleClear=()=>{};
+  setTimeout(()=>{ if(fish.parentNode&&!fish.dataset.caught) fish.remove(); },lifeMs);
 
   fish.addEventListener('click',e=>{ e.stopPropagation(); handleCatch(fish,e.clientX,e.clientY); });
   fish.addEventListener('touchstart',e=>{ e.stopPropagation(); e.preventDefault(); const t=e.touches[0]; handleCatch(fish,t.clientX,t.clientY); },{passive:false});
@@ -1248,7 +1311,20 @@ function closeDaily(){ $('daily-overlay').classList.remove('open'); }
 // ═══════════════ VFX ═══════════════
 function showPop(x,y,txt,col){ const p=document.createElement('div'); p.className='pop'; p.textContent=txt; p.style.cssText=`left:${x}px;top:${y}px;color:${col};`; document.body.appendChild(p); setTimeout(()=>p.remove(),900); }
 function makeRipple(x,y){ const r=document.createElement('div'); r.className='ripple'; r.style.cssText=`left:${x}px;top:${y}px;`; document.body.appendChild(r); setTimeout(()=>r.remove(),560); }
-function makeParticles(cx,cy,col,n){ for(let i=0;i<n;i++){ const p=document.createElement('div'); p.className='pt'; const a=(i/n)*360, dist=35+Math.random()*35, px=Math.cos(a*Math.PI/180)*dist, py=Math.sin(a*Math.PI/180)*dist, s=3+Math.random()*5; p.style.cssText=`left:${cx}px;top:${cy}px;width:${s}px;height:${s}px;background:${col};--px:${px}px;--py:${py}px;`; document.body.appendChild(p); setTimeout(()=>p.remove(),670); } }
+function makeParticles(cx,cy,col,n){
+  // Reduce on mobile, also cap total particles in DOM
+  const isMob=window.innerWidth<600;
+  const count=isMob?Math.min(n,3):Math.min(n,8);
+  const existing=document.querySelectorAll('.pt').length;
+  if(existing>30) return; // global cap — don't pile on when screen is busy
+  for(let i=0;i<count;i++){
+    const p=document.createElement('div'); p.className='pt';
+    const a=(i/count)*360, dist=25+Math.random()*25, px=Math.cos(a*Math.PI/180)*dist, py=Math.sin(a*Math.PI/180)*dist, s=3+Math.random()*4;
+    p.style.cssText=`left:${cx}px;top:${cy}px;width:${s}px;height:${s}px;background:${col};--px:${px}px;--py:${py}px;`;
+    document.body.appendChild(p);
+    setTimeout(()=>p.remove(),600);
+  }
+}
 
 function updateHUD(){ $('score-val').textContent=score.toLocaleString(); $('caught-val').textContent=caught; $('stage-val').textContent=stage+1; $('best-val').textContent=Math.max(score,bestScore).toLocaleString(); }
 function clearFish(){ gameArea.querySelectorAll('.fish').forEach(f=>f.remove()); }
