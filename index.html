@@ -124,6 +124,9 @@ body{font-family:'Nunito',sans-serif;background:var(--ink);color:var(--text);cur
 </head>
 <body>
 
+<audio id="bgm" loop preload="auto">
+  <source src="Pixel_Palms.mp3" type="audio/mpeg">
+</audio>
 <div id="cursor">🎣</div>
 <div id="net-ring"></div>
 <div id="daily-badge">📅 DAILY CHALLENGE</div>
@@ -251,7 +254,21 @@ const SFX={
   stage:  ()=>{ [262,330,392,523].forEach((f,i)=>setTimeout(()=>playTone(f,'sine',.28,.22),i*90)); },
   miss:   ()=>{ playTone(180,'sawtooth',.08,.07); },
 };
-function toggleMute(){ muted=!muted; document.getElementById('mute-btn').textContent=muted?'🔇':'🔊'; }
+function toggleMute(){
+  muted=!muted;
+  document.getElementById('mute-btn').textContent=muted?'🔇':'🔊';
+  const bgm=document.getElementById('bgm');
+  bgm.muted=muted;
+}
+let bgmStarted=false;
+function startBGM(){
+  if(bgmStarted) return; bgmStarted=true;
+  const bgm=document.getElementById('bgm');
+  bgm.volume=0.35; bgm.muted=muted;
+  bgm.play().catch(()=>{});
+}
+document.addEventListener('click',startBGM,{once:true});
+document.addEventListener('touchstart',startBGM,{once:true,passive:true});
 
 // ═══════════════ DAILY SEED ═══════════════
 function getDailyKey(){ const d=new Date(); return `${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`; }
