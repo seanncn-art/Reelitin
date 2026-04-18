@@ -185,6 +185,9 @@ body.stage-fury  #bg{background:linear-gradient(180deg,#0a0515 0%,#120820 25%,#1
 #boss-hp-track{width:100%;height:14px;background:rgba(255,255,255,.08);border-radius:8px;border:1px solid rgba(255,71,87,.3);overflow:hidden;}
 #boss-hp-fill{height:100%;width:100%;background:linear-gradient(90deg,#ff4757,#ff6b35);border-radius:8px;transition:width .15s,background .3s;box-shadow:0 0 12px rgba(255,71,87,.5);}
 #boss-hp-fill.low{background:linear-gradient(90deg,#ff1744,#ff4757);animation:hpPulse .4s ease-in-out infinite alternate;}
+#boss-timer-display{font-family:'Fredoka One',cursive;font-size:.9rem;color:#ff4757;transition:color .3s;}
+#boss-timer-display.urgent{animation:timerPulse .5s ease-in-out infinite alternate;}
+@keyframes timerPulse{from{opacity:1;transform:scale(1)}to{opacity:.6;transform:scale(1.15)}}
 @keyframes hpPulse{from{box-shadow:0 0 8px rgba(255,71,87,.5)}to{box-shadow:0 0 24px rgba(255,71,87,1)}}
 
 #boss-el{position:absolute;cursor:none;z-index:55;-webkit-tap-highlight-color:transparent;transition:filter .08s;filter:drop-shadow(0 0 20px rgba(255,71,87,.6));}
@@ -203,6 +206,9 @@ body.stage-fury  #bg{background:linear-gradient(180deg,#0a0515 0%,#120820 25%,#1
 
 <audio id="bgm" loop preload="auto">
   <source src="Pixel_Palms.mp3" type="audio/mpeg">
+</audio>
+<audio id="boss-bgm" loop preload="auto">
+  <source src="Sun-Faded_8-Bit_Shark.mp3" type="audio/mpeg">
 </audio>
 <div id="cursor">🎣</div>
 <div id="net-ring"></div>
@@ -279,8 +285,12 @@ body.stage-fury  #bg{background:linear-gradient(180deg,#0a0515 0%,#120820 25%,#1
   </div>
 </div>
 <div id="boss-hp-bar-wrap">
-  <div id="boss-hp-label">🐙 KRAKEN BOSS</div>
+  <div style="display:flex;justify-content:space-between;align-items:center;width:100%;">
+    <div id="boss-hp-label">🐙 KRAKEN BOSS</div>
+    <div id="boss-timer-display" style="font-family:'Fredoka One',cursive;font-size:.9rem;color:#ff4757;">⏱ <span id="boss-time-val">60</span>s</div>
+  </div>
   <div id="boss-hp-track"><div id="boss-hp-fill"></div></div>
+  <div id="boss-life-display" style="font-size:.75rem;color:var(--gold);font-family:'Fredoka One',cursive;letter-spacing:1px;"></div>
 </div>
 
 <div id="timer-wrap"><div id="timer-bar"></div></div>
@@ -358,7 +368,7 @@ body.stage-fury  #bg{background:linear-gradient(180deg,#0a0515 0%,#120820 25%,#1
         <div class="htp-item"><span class="htp-icon">🔥</span><div><strong>Chain catches</strong> for combo multipliers up to x12</div></div>
         <div class="htp-item"><span class="htp-icon">✨</span><div><strong>Golden fish</strong> worth 5x points — don't miss them</div></div>
         <div class="htp-item"><span class="htp-icon">🌈</span><div><strong>Bin Tang Snapper</strong> is worth 5,000 pts — extremely rare</div></div>
-        <div class="htp-item"><span class="htp-icon">❄️</span><div><strong>Freeze fish</strong> slow everything down for 3.5 seconds</div></div>
+        <div class="htp-item"><span class="htp-icon">🕸️</span><div><strong>Fish net</strong> slows all fish — one per stage, grab it!</div></div>
         <div class="htp-item"><span class="htp-icon">💣</span><div><strong>Avoid bombs</strong> — they cost you 1,000 points</div></div>
         <div class="htp-item"><span class="htp-icon">🛒</span><div><strong>Shop upgrades</strong> boost range, points, and combos</div></div>
         <div class="htp-item"><span class="htp-icon">🎯</span><div><strong>Hit the target score</strong> each stage to advance</div></div>
@@ -419,8 +429,8 @@ const SFX={
 function toggleMute(){
   muted=!muted;
   document.getElementById('mute-btn').textContent=muted?'🔇':'🔊';
-  const bgm=document.getElementById('bgm');
-  bgm.muted=muted;
+  document.getElementById('bgm').muted=muted;
+  document.getElementById('boss-bgm').muted=muted;
 }
 let bgmStarted=false;
 function startBGM(){
@@ -456,12 +466,12 @@ const STAGES=[
   {num:3,name:'MARLIN ALLEY',  desc:'Mahi-Mahi season — bombs incoming!',        fish:24,speed:1.8,time:30,target:1300,spawnMs:600, goldP:.10,bombP:.12,freezeP:.07,rareP:.06},
   {num:4,name:'STORM SURGE',   desc:'Chaos on the water — chain or die!',        fish:28,speed:2.3,time:28,target:2200,spawnMs:500, goldP:.12,bombP:.15,freezeP:.09,rareP:.07},
   {num:5,name:'MIDNIGHT ABYSS',desc:'Deep water danger — high risk, high reward',fish:32,speed:3.0,time:25,target:3500,spawnMs:400, goldP:.15,bombP:.18,freezeP:.10,rareP:.10},
-  {num:6,name:'HAWAIIAN FURY', desc:'🌺 Ultimate waters — become a legend!',    fish:40,speed:3.8,time:22,target:5000,spawnMs:300,goldP:.20,bombP:.20,freezeP:.12,rareP:.12},
+  {num:6,name:'HAWAIIAN FURY', desc:'🌺 Ultimate waters — become a legend!',    fish:24,speed:3.2,time:22,target:5000,spawnMs:350,goldP:.20,bombP:.18,freezeP:.10,rareP:.12},
   {num:7,name:'KRAKEN BOSS',   desc:'💀 A giant octopus rises — TAP IT TO DEATH!',fish:0,speed:0,time:60,target:0,spawnMs:99999,goldP:0,bombP:0,freezeP:0,rareP:0,isBoss:true},
 ];
 const UPGRADES_DEF=[
   {id:'dual_hook',   name:'Dual Hook',    icon:'🪝',desc:'Click catches nearby fish',  maxLevel:3,costs:[800,2000,4500],  labels:['Small','Medium','Large'],  effect:l=>({catchRadius:[0,50,80,120][l]})},
-  {id:'lure',        name:'Golden Lure',  icon:'✨',desc:'More golden fish spawn',      maxLevel:3,costs:[600,1500,3200],  labels:['Bronze','Silver','Gold'],   effect:l=>({goldBonus:[0,.03,.06,.10][l]})},
+  {id:'lure',        name:'Golden Lure', icon:'✨',desc:'More golden fish spawn',   maxLevel:3,costs:[600,1500,3200],  labels:['Bronze','Silver','Gold'],   effect:l=>({goldBonus:[0,.03,.06,.10][l]})},
   {id:'line_strength',name:'Titanium Line',icon:'💪',desc:'More points per fish',      maxLevel:4,costs:[500,1200,2500,5000],labels:['x1.05','x1.12','x1.25','x1.4'],effect:l=>({ptsMult:[1,1.05,1.12,1.25,1.4][l]})},
   {id:'sonar',       name:'Fish Sonar',   icon:'📡',desc:'Fish linger longer',          maxLevel:3,costs:[700,1800,3800],  labels:['+15%','+30%','+50%'],       effect:l=>({lifetimeMult:[1,1.15,1.30,1.50][l]})},
   {id:'combo_keeper',name:'Combo Keeper', icon:'🔗',desc:'Combo window extended',       maxLevel:3,costs:[600,1500,3000],  labels:['2.5s','3.5s','5s'],         effect:l=>({comboWindow:[2000,2500,3500,5000][l]})},
@@ -479,6 +489,9 @@ let autoShrimpInt=null,shopOpenTime=null;
 let rng=Math.random;
 // Boss state
 let bossActive=false,bossHP=0,bossMaxHP=0,bossEl=null,bossMoveInt=null,bossX=0,bossY=0,bossDX=2.2,bossDY=1.6;
+let bossExtraLifeUsed=false;
+// One net per stage tracking
+let netSpawnedThisStage=false;
 let upgLevels={};
 UPGRADES_DEF.forEach(u=>upgLevels[u.id]=0);
 function getUpg(){ const u={}; UPGRADES_DEF.forEach(d=>Object.assign(u,d.effect(upgLevels[d.id]))); return u; }
@@ -637,6 +650,7 @@ function togglePause(){
     gameArea.querySelectorAll('.fish').forEach(f=>f.style.animationPlayState='paused');
     if(bossEl) bossEl.style.animationPlayState='paused';
     document.getElementById('bgm').pause();
+    document.getElementById('boss-bgm').pause();
     btn.textContent='▶';
     document.getElementById('pause-stage-info').textContent=`Stage ${stage+1}: ${STAGES[stage].name} · ${Math.ceil(timeLeft)}s left`;
     overlay.classList.add('open');
@@ -644,7 +658,9 @@ function togglePause(){
     overlay.classList.remove('open');
     gameArea.querySelectorAll('.fish').forEach(f=>f.style.animationPlayState='running');
     if(bossEl){ bossEl.style.animationPlayState='running'; bossMoveInt=setInterval(moveBoss,16); }
-    document.getElementById('bgm').play().catch(()=>{});
+    // Resume whichever track is appropriate
+    if(bossActive) document.getElementById('boss-bgm').play().catch(()=>{});
+    else document.getElementById('bgm').play().catch(()=>{});
     btn.textContent='⏸';
     _intervals();
   }
@@ -665,7 +681,7 @@ function backToHome(){
 function quitToHome(){
   gameActive=false; paused=false; bossActive=false;
   clearInterval(timerInt); clearInterval(spawnInt); if(autoShrimpInt) clearInterval(autoShrimpInt);
-  clearInterval(bossMoveInt);
+  clearInterval(bossMoveInt); if(window._refillInt) clearInterval(window._refillInt);
   if(bossEl){ bossEl.remove(); bossEl=null; }
   $('boss-hp-bar-wrap').classList.remove('show');
   $('timer-wrap').style.display='block';
@@ -696,6 +712,7 @@ function showStageBanner(idx,cb){
 }
 function beginStage(idx,resumeTime){
   stage=idx; const s=STAGES[idx]; timeLeft=resumeTime!==undefined?resumeTime:s.time;
+  netSpawnedThisStage=false;
   updateHUD(); clearFish(); _intervals();
   for(let i=0;i<s.fish;i++) spawnFish();
 }
@@ -708,12 +725,34 @@ function _intervals(){
     const pct=(timeLeft/s.time)*100; timerBar.style.width=pct+'%'; timerBar.className=pct<25?'urgent':'';
     if(timeLeft<=0) endStage();
   },100);
-  spawnInt=setInterval(()=>{ if(!gameActive||frozen) return; if(gameArea.querySelectorAll('.fish').length<s.fish+16) spawnFish(); },s.spawnMs);
+  spawnInt=setInterval(()=>{
+    if(!gameActive||frozen) return;
+    const cur=gameArea.querySelectorAll('.fish').length;
+    if(cur<s.fish+16) spawnFish();
+    // If screen nearly empty, burst-fill immediately
+    if(cur<4){
+      const needed=Math.min(s.fish, 8);
+      for(let i=0;i<needed;i++) setTimeout(()=>spawnFish(), i*60);
+    }
+  },s.spawnMs);
+  // Fast refill checker — catches gaps between slow spawn intervals
+  const refillInt=setInterval(()=>{
+    if(!gameActive||frozen) return;
+    const cur=gameArea.querySelectorAll('.fish').length;
+    if(cur<3){
+      const needed=Math.min(s.fish, 6);
+      for(let i=0;i<needed;i++) setTimeout(()=>spawnFish(), i*80);
+    }
+  },200);
+  // Store refillInt so it clears with the rest
+  if(window._refillInt) clearInterval(window._refillInt);
+  window._refillInt=refillInt;
   const upg=getUpg();
   if(upg.autoShrimpInterval>0) autoShrimpInt=setInterval(()=>{ if(!gameActive) return; gameArea.querySelectorAll('.fish').forEach(f=>{ if(f.dataset.species==='shrimp'&&!f.dataset.caught) autoCollect(f); }); },upg.autoShrimpInterval);
 }
 function endStage(){
   clearInterval(timerInt); clearInterval(spawnInt); if(autoShrimpInt) clearInterval(autoShrimpInt);
+  if(window._refillInt) clearInterval(window._refillInt);
   const s=STAGES[stage];
   if(s.isBoss){ gameOver(); return; } // shouldn't reach here normally
   if(score>=s.target&&stage<STAGES.length-1){
@@ -728,7 +767,8 @@ function endStage(){
   } else { gameOver(); }
 }
 function gameOver(){
-  gameActive=false; clearInterval(timerInt); clearInterval(spawnInt); if(autoShrimpInt) clearInterval(autoShrimpInt); clearFish();
+  gameActive=false; clearInterval(timerInt); clearInterval(spawnInt); if(autoShrimpInt) clearInterval(autoShrimpInt);
+  if(window._refillInt) clearInterval(window._refillInt); clearFish();
   if(score>bestScore){ bestScore=score; localStorage.setItem('riiBest',bestScore); }
   if(isDailyMode){
     const key=getDailyKey(); const prev=parseInt(localStorage.getItem('dailyBest_'+key)||'0');
@@ -764,6 +804,7 @@ function gameOver(){
 function startBossFight(){
   bossActive=true;
   bossMaxHP=100; bossHP=bossMaxHP;
+  bossExtraLifeUsed=false;
   document.body.classList.add('stage-fury');
   clearFish();
   clearInterval(timerInt); clearInterval(spawnInt);
@@ -771,6 +812,10 @@ function startBossFight(){
   $('timer-wrap').style.display='none';
   $('boss-hp-bar-wrap').classList.add('show');
   updateBossHP();
+
+  // Show extra life indicator
+  $('boss-life-display').textContent='❤️ Extra Life Available';
+  $('boss-life-display').style.color='var(--gold)';
 
   bossEl=document.createElement('div');
   bossEl.id='boss-el';
@@ -788,12 +833,27 @@ function startBossFight(){
   SFX.bossRoar();
   showPop(aW/2, aH/2-80,'🐙 THE KRAKEN AWAKENS!','#ff4757');
 
+  // Switch to boss music
+  const bgm=document.getElementById('bgm');
+  const bossBgm=document.getElementById('boss-bgm');
+  bgm.pause();
+  bossBgm.volume=0.45;
+  bossBgm.muted=muted;
+  bossBgm.currentTime=0;
+  bossBgm.play().catch(()=>{});
+
   timeLeft=60;
   $('time-val').textContent='60';
+  $('boss-time-val').textContent='60';
   timerInt=setInterval(()=>{
     if(!gameActive||!bossActive) return;
     timeLeft=Math.max(0,timeLeft-.1);
-    $('time-val').textContent=Math.ceil(timeLeft);
+    const secs=Math.ceil(timeLeft);
+    $('time-val').textContent=secs;
+    $('boss-time-val').textContent=secs;
+    const timerEl=$('boss-timer-display');
+    if(timeLeft<=15){ timerEl.style.color='#ff1744'; timerEl.classList.add('urgent'); }
+    else { timerEl.style.color='#ff4757'; timerEl.classList.remove('urgent'); }
     if(timeLeft<=0){ bossEscape(); }
   },100);
 }
@@ -887,11 +947,19 @@ function updateBossHP(){
   $('boss-hp-label').textContent=`🐙 KRAKEN  ${bossHP} / ${bossMaxHP} HP`;
 }
 
+function switchToNormalMusic(){
+  const bossBgm=document.getElementById('boss-bgm');
+  const bgm=document.getElementById('bgm');
+  bossBgm.pause(); bossBgm.currentTime=0;
+  if(!muted) bgm.play().catch(()=>{});
+}
+
 function killBoss(){
   bossActive=false;
   clearInterval(bossMoveInt); clearInterval(timerInt);
   bossEl.classList.add('dying');
   SFX.bossDie();
+  switchToNormalMusic();
   const cx=bossX+55, cy=bossY+55;
   // Big explosion
   for(let i=0;i<5;i++) setTimeout(()=>{ makeParticles(cx+(Math.random()-0.5)*80,cy+(Math.random()-0.5)*80,'#ff4757',12); makeParticles(cx+(Math.random()-0.5)*80,cy+(Math.random()-0.5)*80,'#ffd93d',12); },i*120);
@@ -910,8 +978,23 @@ function killBoss(){
 }
 
 function bossEscape(){
+  if(!bossExtraLifeUsed){
+    // Use extra life — reset timer and give another shot
+    bossExtraLifeUsed=true;
+    timeLeft=45; // slightly shorter on second attempt
+    $('boss-time-val').textContent='45';
+    $('boss-life-display').textContent='💔 Extra Life Used — Final Chance!';
+    $('boss-life-display').style.color='#ff4757';
+    SFX.bossRoar();
+    showPop(gameArea.offsetWidth/2, gameArea.offsetHeight/2-60,'❤️ EXTRA LIFE! FINISH IT!','#ffd93d');
+    // Shake screen
+    gameArea.classList.add('shake'); setTimeout(()=>gameArea.classList.remove('shake'),400);
+    return;
+  }
+  // No lives left — boss escapes for real
   bossActive=false;
   clearInterval(bossMoveInt);
+  switchToNormalMusic();
   bossEl&&bossEl.remove(); bossEl=null;
   $('boss-hp-bar-wrap').classList.remove('show');
   $('timer-wrap').style.display='block';
@@ -941,11 +1024,13 @@ function bossVictory(){
 function spawnFish(){
   if(!gameActive) return;
   const s=STAGES[stage], upg=getUpg(), roll=rng();
-  const gP=s.goldP+(upg.goldBonus||0), bP=s.bombP, fP=s.freezeP, rP=s.rareP;
+  const gP=s.goldP+(upg.goldBonus||0), bP=s.bombP, rP=s.rareP;
+  // Only allow freeze/net if none has spawned this stage yet
+  const fP=netSpawnedThisStage?0:s.freezeP;
   let special=null, speciesObj, emoji, pts, size;
   if(roll<bP){ special='bomb'; emoji='💣'; pts=-50; size=2.4; }
   else if(roll<bP+gP){ special='golden'; speciesObj=SPECIES[Math.floor(rng()*SPECIES.length)]; emoji='✨'; pts=speciesObj.pts*5; size=speciesObj.size*1.1; }
-  else if(roll<bP+gP+fP){ special='freeze'; emoji='❄️'; pts=15; size=2.2; }
+  else if(roll<bP+gP+fP){ special='freeze'; emoji='🕸️'; pts=15; size=2.4; netSpawnedThisStage=true; }
   else if(roll<bP+gP+fP+rP){ speciesObj=rng()<.2?SPECIES.find(s=>s.rainbow):(SPECIES.find(s=>s.rare&&!s.rainbow)||SPECIES[0]); emoji=speciesObj.emoji; pts=speciesObj.pts; size=speciesObj.size; special=speciesObj.rainbow?'rainbow':null; }
   else{ const pool=SPECIES.filter(s=>!s.rare); speciesObj=pool[Math.floor(rng()*pool.length)]; emoji=speciesObj.emoji; pts=speciesObj.pts; size=speciesObj.size; }
   const fish=document.createElement('div');
@@ -1010,7 +1095,7 @@ function handleCatch(fish,cx,cy){
     showPop(cx,cy,`-${pen}`,'#ff4757');
   } else if(special==='freeze'){
     score+=Math.round(basePts*(upg.ptsMult||1)*combo); caught++; activateFreeze(); SFX.freeze();
-    showPop(cx,cy,'❄️ SLOW!','#4db8f0'); bumpCombo(upg); makeParticles(cx,cy,'#4db8f0',8);
+    showPop(cx,cy,'🕸️ NETTED! FISH SLOW!','#4db8f0'); bumpCombo(upg); makeParticles(cx,cy,'#4db8f0',8);
   } else if(special==='rainbow'){
     const e=Math.round(basePts*(upg.ptsMult||1)*combo); score+=e; caught++; SFX.rainbow();
     showPop(cx,cy,`🌈 +${e} BIN TANG!`,'#ff00ff'); bumpCombo(upg);
