@@ -679,7 +679,6 @@ setInterval(()=>{
   if(!gameActive||window.innerWidth<600) return;
   const fish=gameArea.querySelectorAll('.fish:not(.caught-anim)');
   if(!fish.length) return;
-  // Pick 2 random fish max to bubble
   const picks=Math.min(2,fish.length);
   for(let i=0;i<picks;i++){
     const f=fish[Math.floor(Math.random()*fish.length)];
@@ -688,6 +687,8 @@ setInterval(()=>{
     if(r.width>0) spawnFishBubble(r.left+r.width/2, r.top+r.height/2);
   }
 },800);
+
+function spawnFishBubble(x,y){
   if(Math.random()>.35) return;
   const b=document.createElement('div'); b.className='fish-bubble';
   const s=2+Math.random()*4;
