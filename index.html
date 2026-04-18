@@ -355,7 +355,7 @@ body.stage-fury  #bg{background:linear-gradient(180deg,#0a0515 0%,#120820 25%,#1
     <div class="home-menu">
       <button class="home-btn home-btn-main" onclick="startGame()">🌊 PLAY</button>
       <button class="home-btn home-btn-daily" onclick="openDaily()">📅 Daily Challenge</button>
-      <button class="home-btn home-btn-boss" onclick="startBossDirectly()">🐙 Fight the Boss</button>
+      <button class="home-btn home-btn-boss" id="boss-shortcut-btn" onclick="startBossDirectly()" style="display:none;">🐙 Fight the Boss</button>
       <button class="home-btn home-btn-info" onclick="showHowToPlay()">📖 How to Play</button>
     </div>
     <div class="home-best">🏆 Best Score: <span id="home-best-score">0</span></div>
@@ -508,11 +508,14 @@ const sbBanner=document.getElementById('stage-banner');
 const freezeOv=document.getElementById('freeze-ov');
 const comboToast=document.getElementById('combo-toast');
 const coverEl=document.getElementById('cover');
-// Update home best score on load
-document.addEventListener('DOMContentLoaded',()=>{
+// Update home screen state (best score + boss unlock)
+function updateHomeScreen(){
   const hb=document.getElementById('home-best-score');
   if(hb) hb.textContent=bestScore.toLocaleString();
-});
+  const bb=document.getElementById('boss-shortcut-btn');
+  if(bb) bb.style.display=localStorage.getItem('riiBossBeaten')?'block':'none';
+}
+document.addEventListener('DOMContentLoaded', updateHomeScreen);
 const $=id=>document.getElementById(id);
 
 // ═══════════════ CURSOR ═══════════════
@@ -695,7 +698,7 @@ function quitToHome(){
   document.getElementById('howtoplay-screen').style.display='none';
   document.getElementById('cover-box').style.display='none';
   coverEl.style.display='flex';
-  document.getElementById('home-best-score').textContent=bestScore.toLocaleString();
+  updateHomeScreen();
 }
 function startGame(){ isDailyMode=false; rng=Math.random; $('daily-badge').classList.remove('show'); _init(); }
 
@@ -814,6 +817,7 @@ function gameOver(){
     <button class="play-btn play-daily" onclick="quitToHome()">🏠 Home</button>
   `;
   document.getElementById('home-best-score').textContent=bestScore.toLocaleString();
+  updateHomeScreen();
   coverEl.style.display='flex';
 }
 
@@ -1021,6 +1025,7 @@ function bossEscape(){
 
 function bossVictory(){
   gameActive=false;
+  localStorage.setItem('riiBossBeaten','1');
   if(score>bestScore){ bestScore=score; localStorage.setItem('riiBest',bestScore); }
   const coverBox=document.getElementById('cover-box');
   document.getElementById('home-screen').style.display='none';
@@ -1036,6 +1041,7 @@ function bossVictory(){
     <button class="play-btn play-daily" onclick="quitToHome()">🏠 Home</button>
   `;
   document.getElementById('home-best-score').textContent=bestScore.toLocaleString();
+  updateHomeScreen();
   coverEl.style.display='flex';
 }
 function spawnFish(){
