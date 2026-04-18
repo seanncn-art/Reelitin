@@ -719,9 +719,35 @@ function openShop(){
 
 function closeShop(){
   $id('shop-overlay').classList.remove('open');
-  // Resume with the remaining time we snapshotted — not a full reset
-  beginStage(stage, shopOpenTime);
   shopOpenTime=null;
+  // Restart intervals only — don't wipe fish or reset state
+  const s=STAGES[stage];
+  if(timerInt) clearInterval(timerInt);
+  if(spawnInt) clearInterval(spawnInt);
+  if(autoShrimpInt) clearInterval(autoShrimpInt);
+  timerInt=setInterval(()=>{
+    if(!gameActive) return;
+    timeLeft=Math.max(0,timeLeft-.1);
+    $id('time-val').textContent=Math.ceil(timeLeft);
+    const pct=(timeLeft/s.time)*100;
+    timerBar.style.width=pct+'%';
+    timerBar.className=pct<25?'urgent':'';
+    if(timeLeft<=0) endStage();
+  },100);
+  spawnInt=setInterval(()=>{
+    if(!gameActive||frozen) return;
+    const cur=gameArea.querySelectorAll('.fish').length;
+    if(cur<s.fish+16) spawnFish();
+  },s.spawnMs);
+  const upg=getUpg();
+  if(upg.autoShrimpInterval>0){
+    autoShrimpInt=setInterval(()=>{
+      if(!gameActive) return;
+      gameArea.querySelectorAll('.fish').forEach(f=>{
+        if(f.dataset.species==='shrimp'&&!f.dataset.caught) autoCollect(f);
+      });
+    },upg.autoShrimpInterval);
+  }
 }
 
 function renderShop(){
