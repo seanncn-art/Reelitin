@@ -162,6 +162,8 @@ body.stage-fury  #bg{background:linear-gradient(180deg,#0a0515 0%,#120820 25%,#1
 .home-btn-main{background:linear-gradient(135deg,var(--gold),var(--orange));color:#03101f;box-shadow:0 6px 22px rgba(255,150,0,.4);font-size:1.25rem;}
 .home-btn-main:hover{transform:translateY(-2px);box-shadow:0 10px 28px rgba(255,150,0,.5);}
 .home-btn-daily{background:linear-gradient(135deg,var(--green),#00b4d8);color:#03101f;box-shadow:0 4px 16px rgba(61,255,176,.3);}
+.home-btn-boss{background:linear-gradient(135deg,#ff4757,#c0392b);color:#fff;box-shadow:0 4px 16px rgba(255,71,87,.4);}
+.home-btn-boss:hover{transform:translateY(-2px);box-shadow:0 8px 22px rgba(255,71,87,.55);}
 .home-btn-info{background:rgba(255,255,255,.07);color:var(--foam);border:1px solid rgba(77,184,240,.2);}
 .home-best{font-family:'Fredoka One',cursive;font-size:.88rem;color:var(--gold);opacity:.65;margin-bottom:5px;}
 .home-credit{font-size:.7rem;color:var(--foam);opacity:.3;letter-spacing:2px;}
@@ -353,6 +355,7 @@ body.stage-fury  #bg{background:linear-gradient(180deg,#0a0515 0%,#120820 25%,#1
     <div class="home-menu">
       <button class="home-btn home-btn-main" onclick="startGame()">🌊 PLAY</button>
       <button class="home-btn home-btn-daily" onclick="openDaily()">📅 Daily Challenge</button>
+      <button class="home-btn home-btn-boss" onclick="startBossDirectly()">🐙 Fight the Boss</button>
       <button class="home-btn home-btn-info" onclick="showHowToPlay()">📖 How to Play</button>
     </div>
     <div class="home-best">🏆 Best Score: <span id="home-best-score">0</span></div>
@@ -695,6 +698,20 @@ function quitToHome(){
   document.getElementById('home-best-score').textContent=bestScore.toLocaleString();
 }
 function startGame(){ isDailyMode=false; rng=Math.random; $('daily-badge').classList.remove('show'); _init(); }
+
+function startBossDirectly(){
+  isDailyMode=false; rng=Math.random;
+  $('daily-badge').classList.remove('show');
+  score=0; totalPts=0; combo=1; caught=0; paused=false;
+  Object.keys(upgLevels).forEach(k=>upgLevels[k]=0);
+  coverEl.style.display='none';
+  document.getElementById('pause-btn').textContent='⏸';
+  gameActive=true;
+  stage=STAGES.length-1; // boss stage
+  updateHUD(); clearFish();
+  updateStageAtmosphere(stage);
+  showStageBanner(stage,()=>{ beginStage(stage); startBossFight(); });
+}
 function startDailyChallenge(){ isDailyMode=true; rng=seededRand(hashStr(getDailyKey())); $('daily-badge').classList.add('show'); closeDaily(); _init(); }
 function _init(){
   score=0; totalPts=0; combo=1; caught=0; stage=0; paused=false;
