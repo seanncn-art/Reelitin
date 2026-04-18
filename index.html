@@ -548,7 +548,8 @@ document.addEventListener('touchmove',e=>{ const t=e.touches[0]; mouseX=t.client
 (()=>{
   const w=document.getElementById('plankton-wrap');
   w.style.cssText='position:fixed;inset:0;z-index:6;pointer-events:none;';
-  for(let i=0;i<40;i++){
+  const count=window.innerWidth<600?10:40;
+  for(let i=0;i<count;i++){
     const p=document.createElement('div'); p.className='plankton';
     const s=1+Math.random()*2.5;
     p.style.cssText=`width:${s}px;height:${s}px;left:${Math.random()*100}%;top:${20+Math.random()*75}%;animation-duration:${6+Math.random()*10}s;animation-delay:${Math.random()*8}s;opacity:${.2+Math.random()*.5}`;
@@ -556,9 +557,10 @@ document.addEventListener('touchmove',e=>{ const t=e.touches[0]; mouseX=t.client
   }
 })();
 
-// ── Caustic light patterns (canvas) ──
+// ── Caustic light patterns (canvas) — skip on mobile ──
 (()=>{
   const canvas=document.getElementById('caustic-canvas');
+  if(window.innerWidth<600){ canvas.style.display='none'; return; }
   const ctx=canvas.getContext('2d');
   let t=0;
   function resize(){ canvas.width=window.innerWidth; canvas.height=window.innerHeight; }
@@ -958,21 +960,29 @@ function spawnFish(){
   const dSize=isMobile?size*1.3:size;
   fish.style.cssText=`top:${top}%;left:${8+rng()*70}%;font-size:${dSize}rem;--dx:${dx}px;animation-duration:${dur}s;animation-delay:${-rng()*dur}s`;
 
-  // Depth fog — fish in lower 40% of screen look deeper
-  if(top>65) fish.classList.add('deep');
-  else if(top>45) fish.classList.add('mid-depth');
+  // Depth fog — simpler filter on mobile to avoid iPhone glitch
+  if(!isMobile){
+    if(top>65) fish.classList.add('deep');
+    else if(top>45) fish.classList.add('mid-depth');
+  }
 
-  // Bubble trail
-  const bubbleInt=setInterval(()=>{
-    if(!fish.parentNode){ clearInterval(bubbleInt); return; }
-    const r=fish.getBoundingClientRect();
-    if(r.width>0) spawnFishBubble(r.left+r.width/2, r.top+r.height/2);
-  }, 600+Math.random()*400);
-  fish._bubbleClear=()=>clearInterval(bubbleInt);
+  // Bubble trail — desktop only (too many intervals kills iPhone at stage 5)
+  if(!isMobile){
+    const bubbleInt=setInterval(()=>{
+      if(!fish.parentNode){ clearInterval(bubbleInt); return; }
+      const r=fish.getBoundingClientRect();
+      if(r.width>0) spawnFishBubble(r.left+r.width/2, r.top+r.height/2);
+    }, 600+Math.random()*400);
+    fish._bubbleClear=()=>clearInterval(bubbleInt);
+    setTimeout(()=>{ clearInterval(bubbleInt); if(fish.parentNode&&!fish.dataset.caught) fish.remove(); },lifeMs);
+  } else {
+    fish._bubbleClear=()=>{};
+    setTimeout(()=>{ if(fish.parentNode&&!fish.dataset.caught) fish.remove(); },lifeMs);
+  }
+
   fish.addEventListener('click',e=>{ e.stopPropagation(); handleCatch(fish,e.clientX,e.clientY); });
   fish.addEventListener('touchstart',e=>{ e.stopPropagation(); e.preventDefault(); const t=e.touches[0]; handleCatch(fish,t.clientX,t.clientY); },{passive:false});
   gameArea.appendChild(fish);
-  setTimeout(()=>{ clearInterval(bubbleInt); if(fish.parentNode&&!fish.dataset.caught) fish.remove(); },lifeMs);
 }
 
 function autoCollect(fish){
@@ -1065,12 +1075,35 @@ function activateFreeze(){
 }
 
 // ═══════════════ SHOP ═══════════════
+let shopFromPause=false;
 function openShop(){
   if(!gameActive) return;
-  clearInterval(timerInt); clearInterval(spawnInt); if(autoShrimpInt) clearInterval(autoShrimpInt);
-  shopOpenTime=timeLeft; renderShop(); $('shop-overlay').classList.add('open');
+  // If paused, open shop without closing pause overlay yet
+  shopFromPause=paused;
+  if(!paused){
+    clearInterval(timerInt); clearInterval(spawnInt); if(autoShrimpInt) clearInterval(autoShrimpInt);
+    clearInterval(bossMoveInt);
+    gameArea.querySelectorAll('.fish').forEach(f=>f.style.animationPlayState='paused');
+    if(bossEl) bossEl.style.animationPlayState='paused';
+  }
+  shopOpenTime=timeLeft;
+  $('pause-overlay').classList.remove('open');
+  renderShop(); $('shop-overlay').classList.add('open');
 }
-function closeShop(){ $('shop-overlay').classList.remove('open'); shopOpenTime=null; _intervals(); }
+function closeShop(){
+  $('shop-overlay').classList.remove('open');
+  shopOpenTime=null;
+  if(shopFromPause){
+    // Return to pause screen
+    shopFromPause=false;
+    $('pause-overlay').classList.add('open');
+  } else {
+    // Resume game normally
+    gameArea.querySelectorAll('.fish').forEach(f=>f.style.animationPlayState='running');
+    if(bossEl){ bossEl.style.animationPlayState='running'; bossMoveInt=setInterval(moveBoss,16); }
+    _intervals();
+  }
+}
 function renderShop(){
   $('shop-pts-display').textContent=score.toLocaleString();
   const grid=$('upgrades-grid'); grid.innerHTML='';
